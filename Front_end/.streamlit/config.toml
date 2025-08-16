@@ -1,0 +1,20 @@
+[theme]
+
+#dark mode
+#base = "dark"
+#primaryColor = "#9333EA"
+#backgroundColor = "#050505"
+#secondaryBackgroundColor = "#1A0D2E"
+#textColor = "#F5F3FF"
+#linkColor = "#C4B5FD"
+#codeBackgroundColor = "#2D1B42"
+#font = "sans-serif"
+
+base = "light"
+primaryColor = "#6B7280"
+backgroundColor = "#FDF8F0"
+secondaryBackgroundColor = "#F6E6D3"
+textColor = "#2D1B0E"
+linkColor = "#B45309"
+codeBackgroundColor = "#F4E6D7"
+font = "serif"
