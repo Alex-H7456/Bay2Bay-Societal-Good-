@@ -1,41 +1,48 @@
+import sys
+import os
+
+# Add parent folder to Python path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
+
+
 import streamlit as st
-import time 
+import time
+import The_backend
+
+sensitivity =0.28
 
 
 def receive_input():
     with st.form(key='input_form'):
-        user_input = st.text_area("Enter your text here:", height = 50, max_chars=200)
-        submit_button = st.form_submit_button(label='Submit')
-        
+        user_input = st.text_area("Ask a community of patients:", height = 50, max_chars=200)
+        submit_button = st.form_submit_button(label='Search')
+
         if submit_button:
             st.session_state['user_input'] = user_input
             #st.success("Input received!")
 
 
-def loading_animation(interval: int =2):
-    placeholder = st.empty()
-    loading_text = "Loading"
-    interval = int(interval / 0.2)  # Convert seconds to number of iterations
-    for i in range(interval):  # 6 iterations
-        dots = "." * (i % 8)  # cycles through "", ".", "..", "..."
-        placeholder.text(f"{loading_text}{dots}")
-        time.sleep(0.2)  # wait half a second
 
-    placeholder.text("Done loading!")  # final message after loading
+def backend(input: str):
+    time.sleep(1)
 
-Query_time = 5
 
-st.markdown("<h1 style='text-align: center;'>Enter Name </h1>", unsafe_allow_html=True)
+
+
+
+
+st.markdown("<h1 style='text-align: center;'>Med Source</h1>", unsafe_allow_html=True)
  #this is the front thing
-st.sidebar.markdown("# 🏠 Enter Name")
+st.sidebar.markdown("# 🏠 Med Source")
 
 #use keys to segregate different parts of the page in a session
-#all callables are temporary 
+#all callables are temporary
 
 with st.sidebar:
     with st.container(border = True):
-        st.markdown("<h2 style='text-align: center;'>Welcome to Enter Name</h2>", unsafe_allow_html=True)
-        st.write("This is our submission for the Bay2Bay Hackathon 2025.")
+        st.markdown("<h2 style='text-align: center;'>Welcome to Med Source</h2>", unsafe_allow_html=True)
+        st.write("This is our submission for the Bay2Bay Hackathon 2025. An attempts to democratise patient information with input from AI agents powered by the open FDA database")
     st.markdown("------")
     st.markdown("<h2 style='text-align: center;'>Workflow Content</h2>", unsafe_allow_html=True)
 
@@ -44,15 +51,85 @@ with st.sidebar:
 
 #input now saved in session state dictionary
 receive_input()
+#parameters for number of entries and resolution
+st.markdown(
+    """
+    <div style="color: black; font-size:12px; margin:0; padding:0;">
+        Always consult a proffesional. This is not medical advice
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
+st.markdown("------")
+
+l_col, r_col = st.columns([2.5, 1.5])
+
+with l_col:
+    results = st.slider(
+        "Select the number of reviews",
+        min_value=0,
+        max_value=20,
+        value = 5
+    )
+
+with r_col:
+    Ai_type = st.selectbox(
+        "FDA AI Detail",
+        options= ["Concise Search", "Deep Search"],
+        index = 0
+    )
+
 
 st.markdown("------")
 
 if 'user_input' in st.session_state:
     st.sidebar.write("Search:", st.session_state['user_input'])
 
-    loading_animation(Query_time)
-    st.sidebar.write(f"Query Time: {Query_time} seconds")
-        
 
-    with st.expander("View Input"):
-        st.write("something meaningful")
+
+
+    with st.spinner("Processing..."):  # Streamlit built-in spinner
+        start_time = time.time()
+        engine = The_backend.SearchGo(st.session_state['user_input'],results, sensitivity)
+        end_time = time.time()
+
+    st.sidebar.write(f"Query Time: {end_time-start_time:.2f} seconds")
+
+
+    main_col, right_col = st.columns([2.5, 1.5])
+
+    with main_col:
+
+        st.markdown("""
+        <div style='font-size:25px; margin:0; padding:0; line-height:1.2;'>Patient Reviews</div>
+    """, unsafe_allow_html=True)
+
+        if engine.output["reviews"]["score"][0] <sensitivity:
+            st.write("No relevant reviews")
+
+
+        else:
+            for i in range(len(engine.output["reviews"]["DrugName"])):
+                if engine.output["reviews"]["score"][i] <sensitivity:
+                    st.write("No more relevant search results")
+                    break
+                else:
+                    with st.container(border = True):
+                        st.write(f"Patient ID: {engine.output['reviews']['ID'][i]}")
+                        st.write(f"Drug: {engine.output['reviews']['DrugName'][i]} for {engine.output['reviews']['condition'][i]}")
+                        st.write(f"{engine.output['reviews']['review'][i]}")
+
+
+
+    with right_col:
+        st.markdown("""
+        <div style='font-size:25px; margin:0; padding:0; line-height:1.2;'>FDA Guidance</div>
+    """, unsafe_allow_html=True)
+        st.write("AI-powered")
+
+        with st.container(border = True):
+            if Ai_type == "Concise Search":
+                st.write(f"{engine.output["AI"]["truncated"]}")
+            else:
+                st.write(f"{engine.output["AI"]["long"]}")

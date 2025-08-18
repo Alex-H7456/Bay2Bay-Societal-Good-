@@ -1,6 +1,6 @@
 
 
-#used to clean data for other input 
+#used to clean data for other input
 import pandas as pd
 import numpy as np
 from sentence_transformers import SentenceTransformer
@@ -10,8 +10,8 @@ df = df_real.copy(deep=True)
 
 
 df["search_text"] = (
-    "Drug: " + df["drugName"].astype(str) +
-    " | Condition: " + df["condition"].astype(str) +
+    "Drug: " + df["drugName"].astype(str)
+    " | Condition: " + df["condition"].astype(str)
     " | Review: " + df["review"].astype(str)
 )
 

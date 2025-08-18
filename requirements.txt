@@ -1,10 +1,7 @@
-streamlit
+streamlit 
 transformers 
 requests 
 pandas 
 numpy 
-
-ja-ginza 
-groq 
-faiss-cpu
+groq
 sentence_transformers
