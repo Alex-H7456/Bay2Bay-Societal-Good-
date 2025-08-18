@@ -1,1 +1,10 @@
-streamlit transformers requests pandas numpy time 
+streamlit
+transformers 
+requests 
+pandas 
+numpy 
+
+ja-ginza 
+groq 
+faiss-cpu
+sentence_transformers
