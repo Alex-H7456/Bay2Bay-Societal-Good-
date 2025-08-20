@@ -9,6 +9,7 @@ sys.path.append(parent_dir)
 import streamlit as st
 import time 
 import The_backend
+import pandas as pd
 
 sensitivity =0.28
 
@@ -24,13 +25,12 @@ def receive_input():
 
 
 
-def backend(input: str):
-    time.sleep(1)
 
-   
+@st.cache_resource
+def load_vectors():
+    return pd.read_parquet("drug_reviews_with_embeddings.parquet")
 
-
-
+df_database = load_vectors()
 
 st.markdown("<h1 style='text-align: center;'>Med Source</h1>", unsafe_allow_html=True)
  #this is the front thing
@@ -55,7 +55,7 @@ receive_input()
 st.markdown(
     """
     <div style="color: black; font-size:12px; margin:0; padding:0;">
-        Always consult a proffesional. This is not medical advice
+        Always consult a professional. This is not medical advice
     </div>
     """,
     unsafe_allow_html=True
@@ -91,7 +91,7 @@ if 'user_input' in st.session_state:
     
     with st.spinner("Processing..."):  # Streamlit built-in spinner
         start_time = time.time()
-        engine = The_backend.SearchGo(st.session_state['user_input'],results, sensitivity)
+        engine = The_backend.SearchGo(st.session_state['user_input'],results, df_database, sensitivity)
         end_time = time.time()
 
     st.sidebar.write(f"Query Time: {end_time-start_time:.2f} seconds")

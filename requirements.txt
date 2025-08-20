@@ -1,7 +1,7 @@
 streamlit 
-transformers 
 requests 
 pandas 
 numpy 
 groq
 sentence_transformers
+faiss-cpu

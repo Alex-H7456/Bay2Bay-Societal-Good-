@@ -5,86 +5,77 @@ import time
 
 #potential to introduce caching and advanced features later
 
-st.markdown("# Page 2 ❄️")
-st.sidebar.markdown("# Page 2 ❄️")
-st.write("This is page 2 content.")
+st.sidebar.markdown("# 🧬 Add submission ")
 
-#st.write used automatically even wen ommited
-st.write("Here's our first attempt at using data to create a table:")
-chart_data = pd.DataFrame({
-    'first column': [1, 2, 3, 4],
-    'second column': [10, 20, 30, 40]
-})
+import sys
+import os
 
-st.line_chart(chart_data)
+# Add parent folder to Python path
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.append(parent_dir)
 
 
-map_data = pd.DataFrame(
-    np.random.randn(100, 2) / [80, 80] + [51.4543, -0.9781],
-    columns=['lat', 'lon'])
+import streamlit as st
+import time 
 
-st.map(map_data)
-
-
-x = st.slider('x')  # 👈 this is a widget
-st.write(x, 'squared is', x * x)
+import pandas as pd
 
 
-if st.checkbox('Show dataframe'):
-    chart_data = pd.DataFrame(
-       np.random.randn(20, 3),
-       columns=['a', 'b', 'c'])
 
-    chart_data
-
-
-df = pd.DataFrame({
-    'first column': [1, 2, 3, 4],
-    'second column': [10, 20, 30, 40]
-    })
-
-
-with st.expander("See explanation"):
-    option = st.sidebar.selectbox(
-        'Which number do you like best?',
-        df['first column'])
-
-    'You selected: ', option
+def receive_input(Message: str, crypt: str, height_: int = 50):
+    with st.form(key=crypt):
+        user_input = st.text_area(Message, height = height_, max_chars=200)
+        submit_button = st.form_submit_button(label='Submit')
+        
+        if submit_button:
+            st.session_state[crypt] = user_input
 
 
 
 
+@st.cache_resource
+def load_vectors():
+    return pd.read_parquet("drug_reviews_with_embeddings.parquet")
+
+df_database = load_vectors()
+
+st.markdown("<h1 style='text-align: center;'> 🧬 Add a Submission</h1>", unsafe_allow_html=True)
+ #this is the front thing
+st.sidebar.markdown("# 🧬 Med Source")
+
+#use keys to segregate different parts of the page in a session
+#all callables are temporary 
+
+with st.sidebar:
+    with st.container(border = True):
+        st.markdown("<h2 style='text-align: center;'>Welcome to Med Source</h2>", unsafe_allow_html=True)
+        st.write("Make an entry into the Med Source Database to help future patients.")
+    st.markdown("------")
+    st.markdown("<h2 style='text-align: center;'>Workflow Content</h2>", unsafe_allow_html=True)
 
 
 
 
-left_column, right_column = st.columns(2)
-# You can use a column just like st.sidebar:
-left_column.button('Press me!')
+#input now saved in session state dictirnary
 
-# Or even better, call Streamlit functions inside a "with" block:
-with right_column:
-    chosen = st.radio(
-        'Sorting hat',
-        ("Gryffindor", "Ravenclaw", "Hufflepuff", "Slytherin"))
-    st.write(f"You are in {chosen} house!")
+receive_input("Join a community of patients: Add Review", "Review_input", 50)
 
 
-'Starting a long computation...'
 
-# Add a placeholder
-latest_iteration = st.empty()
-bar = st.progress(0)
+st.markdown(
+    """
+    <div style="color: black; font-size:12px; margin:0; padding:0;">
+        Your Patient ID will be generated
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 
-for i in range(100):  #unlike other thingies forloop suprisingly doesn't refresh the page
-  # Update the progress bar with each iteration.
-  latest_iteration.text(f'Iteration {i+1}')
-  bar.progress(i + 1)
-  time.sleep(0.1)
+st.markdown("------")
 
-'...and now we\'re done!'
+            
 
-
-with st.spinner("Processing your data..."):
-    time.sleep(3)  # simulate long task
-st.success("Done!")
+if "Review_input" in st.session_state:
+    st.write("Review submitted")
+    st.write("Patient ID")
+    st.write(st.session_state["Review_input"])
