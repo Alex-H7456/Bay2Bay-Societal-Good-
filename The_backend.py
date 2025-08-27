@@ -9,15 +9,14 @@ import os
 os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
-df_reviews = pd.read_parquet("drug_reviews_with_embeddings.parquet")
-
 
 class SearchGo:
   #encode the embeddings into the embedding space
-  def __init__(self, response: str, num_entries: int, resolution: float = 0.28):
+  def __init__(self, response: str, num_entries: int, database, resolution: float = 0.28):
     self.response = response
     self.num = num_entries
     self.resolution = resolution
+    self.database = database
     self.output ={
        "reviews" : {
           "ID": [],
@@ -35,19 +34,21 @@ class SearchGo:
     self.main()
 
   def main(self):
-    top_drug = self.get_reviews(df_reviews, self.num, self.response)
-
+    print("database done")
+    top_drug = self.get_reviews(self.database, self.num, self.response)
+    print("embeddings done")
     model = Drug()
     report3 = model.get_drug_FDA(top_drug, 1, "label") #1 refers to number of queries this is enough
-
+    print("FDA done")
     if report3 == None:
       print("Drug not in FDA database or no drug found")
       self.output["AI"]["truncated"] = "Drug not in FDA database or no drug found"
-
+    
     else:
       report3 = model.filter_events_FDA(report3)
       report3 = model.summarise_drug_info(report3)
       self.prompt_AI(report3)
+    print("Grok")
 
 
 
@@ -62,7 +63,7 @@ class SearchGo:
 
       #embed the query
       query_embedding = model.encode(query, convert_to_tensor=False)
-      #format for the search
+      #format for the search 
       query_vector = np.array([query_embedding], dtype="float32")
       faiss.normalize_L2(query_vector)
 
@@ -72,7 +73,6 @@ class SearchGo:
       # Step 7: Print the search results
       print("Top matches for the query:")
       for i, idx in enumerate(indices[0]):
-        print(i)
         self.output["reviews"]["ID"].append(df.iloc[idx]["patient_id"])
         self.output["reviews"]["DrugName"].append(df.iloc[idx]['drugName'])
         self.output["reviews"]["score"].append(distances[0][i])
@@ -142,6 +142,10 @@ class SearchGo:
 
 
 if __name__ == "__main__":
-  test = SearchGo("hot sweats", 3, 0.25)
 
-  print(test.output["reviews"])
+  df_reviews = pd.read_parquet("drug_reviews_with_embeddings.parquet")  
+  test = SearchGo("feeling depressed", 3,df_reviews, 0.25)
+  print(test.output["AI"]["truncated"])
+
+
+

@@ -19,21 +19,21 @@ class Drug:
                 "label": "https://api.fda.gov/drug/label.json",
                 "drugsfda": "https://api.fda.gov/drug/drugsfda.json"
             }
-
+            
             search_fields = {
                 "event": f'patient.drug.medicinalproduct:"{drug_1}*"',
                 "label": f'openfda.brand_name:"{drug_1}*"',
                 "drugsfda": f'products.brand_name:"{drug_1}*"'
             }
-
+            
             url = base_urls[self.status]
             search_query = search_fields[self.status]
-
+            
             params = {
                 "search": search_query,
                 "limit": limit
             }
-
+            
             response = requests.get(url, params=params)
             if response.status_code == 200:
                 return response.json()["results"]
@@ -58,7 +58,7 @@ class Drug:
 
 
         return [ids1[i] for i in overlap_ids]
-
+            
 
 
     def filter_events_FDA(self, events):
@@ -106,9 +106,9 @@ class Drug:
 
         if self.status == "None":
             return None
-
+            
         return filtered
-
+    
     def summarise_drug_info(self, drug_entry):
         summaries = []
 
@@ -141,16 +141,16 @@ class Drug:
 
     **Active Substance(s):** {substance}
 
-    **Purpose:**
+    **Purpose:**  
     {purpose.strip()}
 
-    **Indications/Usage:**
+    **Indications/Usage:**  
     {indications.strip()}
 
-    **Warnings/Precautions:**
+    **Warnings/Precautions:**  
     {warnings.strip()}
 
-    **Adverse Reactions:**
+    **Adverse Reactions:**  
     {adverse_summary.strip()}
     """.strip())
 
@@ -171,3 +171,5 @@ if __name__ == "__main__":
     report1 = model.get_drug_FDA("Diamox", 1, "label")
     report1 = model.filter_events_FDA(report1)
     print(model.summarise_drug_info(report1))
+
+    

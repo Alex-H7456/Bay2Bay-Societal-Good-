@@ -7,8 +7,9 @@ sys.path.append(parent_dir)
 
 
 import streamlit as st
-import time
+import time 
 import The_backend
+import pandas as pd
 
 sensitivity =0.28
 
@@ -17,20 +18,19 @@ def receive_input():
     with st.form(key='input_form'):
         user_input = st.text_area("Ask a community of patients:", height = 50, max_chars=200)
         submit_button = st.form_submit_button(label='Search')
-
+        
         if submit_button:
             st.session_state['user_input'] = user_input
             #st.success("Input received!")
 
 
 
-def backend(input: str):
-    time.sleep(1)
 
+@st.cache_resource
+def load_vectors():
+    return pd.read_parquet("drug_reviews_with_embeddings.parquet")
 
-
-
-
+df_database = load_vectors()
 
 st.markdown("<h1 style='text-align: center;'>Med Source</h1>", unsafe_allow_html=True)
  #this is the front thing
@@ -55,7 +55,7 @@ receive_input()
 st.markdown(
     """
     <div style="color: black; font-size:12px; margin:0; padding:0;">
-        Always consult a proffesional. This is not medical advice
+        Always consult a professional. This is not medical advice
     </div>
     """,
     unsafe_allow_html=True
@@ -63,7 +63,7 @@ st.markdown(
 
 st.markdown("------")
 
-l_col, r_col = st.columns([2.5, 1.5])
+l_col, r_col = st.columns([2.5, 1.5]) 
 
 with l_col:
     results = st.slider(
@@ -88,19 +88,19 @@ if 'user_input' in st.session_state:
 
 
 
-
+    
     with st.spinner("Processing..."):  # Streamlit built-in spinner
         start_time = time.time()
-        engine = The_backend.SearchGo(st.session_state['user_input'],results, sensitivity)
+        engine = The_backend.SearchGo(st.session_state['user_input'],results, df_database, sensitivity)
         end_time = time.time()
 
     st.sidebar.write(f"Query Time: {end_time-start_time:.2f} seconds")
+        
 
-
-    main_col, right_col = st.columns([2.5, 1.5])
+    main_col, right_col = st.columns([2.5, 1.5]) 
 
     with main_col:
-
+         
         st.markdown("""
         <div style='font-size:25px; margin:0; padding:0; line-height:1.2;'>Patient Reviews</div>
     """, unsafe_allow_html=True)
@@ -108,7 +108,7 @@ if 'user_input' in st.session_state:
         if engine.output["reviews"]["score"][0] <sensitivity:
             st.write("No relevant reviews")
 
-
+            
         else:
             for i in range(len(engine.output["reviews"]["DrugName"])):
                 if engine.output["reviews"]["score"][i] <sensitivity:
@@ -119,7 +119,7 @@ if 'user_input' in st.session_state:
                         st.write(f"Patient ID: {engine.output['reviews']['ID'][i]}")
                         st.write(f"Drug: {engine.output['reviews']['DrugName'][i]} for {engine.output['reviews']['condition'][i]}")
                         st.write(f"{engine.output['reviews']['review'][i]}")
-
+            
 
 
     with right_col:
@@ -133,3 +133,6 @@ if 'user_input' in st.session_state:
                 st.write(f"{engine.output["AI"]["truncated"]}")
             else:
                 st.write(f"{engine.output["AI"]["long"]}")
+
+
+
